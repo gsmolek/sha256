@@ -1,24 +1,24 @@
 #include "sha256.h"
-
-unsigned int Sha256::h0;
-unsigned int Sha256::h1;
-unsigned int Sha256::h2;
-unsigned int Sha256::h3;
-unsigned int Sha256::h4;
-unsigned int Sha256::h5;
-unsigned int Sha256::h6;
-unsigned int Sha256::h7;
-
+/*
+unsigned int gsm::Sha256::h0;
+unsigned int gsm::Sha256::h1;
+unsigned int gsm::Sha256::h2;
+unsigned int gsm::Sha256::h3;
+unsigned int gsm::Sha256::h4;
+unsigned int gsm::Sha256::h5;
+unsigned int gsm::Sha256::h6;
+unsigned int gsm::Sha256::h7;
+*/
 std::string gsm::Sha256::hash_value(std::string msg)
 {
-    h0 = 0x6a09e667;
-    h1 = 0xbb67ae85;
-    h2 = 0x3c6ef372;
-    h3 = 0xa54ff53a;
-    h4 = 0x510e527f;
-    h5 = 0x9b05688c;
-    h6 = 0x1f83d9ab;
-    h7 = 0x5be0cd19;
+    gsm::Sha256::h0 = 0x6a09e667;
+    gsm::Sha256::h1 = 0xbb67ae85;
+    gsm::Sha256::h2 = 0x3c6ef372;
+    gsm::Sha256::h3 = 0xa54ff53a;
+    gsm::Sha256::h4 = 0x510e527f;
+    gsm::Sha256::h5 = 0x9b05688c;
+    gsm::Sha256::h6 = 0x1f83d9ab;
+    gsm::Sha256::h7 = 0x5be0cd19;
 
     std::string message=char_string_to_binary_string(msg,8);
     std::vector<unsigned int> w;
