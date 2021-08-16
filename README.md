@@ -1,2 +1,2 @@
 # sha256
-implementation of the sha256 algorithm.
+implementation of sha256 algorithm.
