@@ -3,6 +3,7 @@
 #include <bitset>
 #include <vector>
 #include <sstream>
+#include<math.h>
 
 namespace gsm{
 
@@ -17,6 +18,14 @@ namespace gsm{
         static unsigned int h5;
         static unsigned int h6;
         static unsigned int h7;
+        /*unsigned int& h0_r = h0;
+        unsigned int& h1_r = h1;
+        unsigned int& h2_r = h2;
+        unsigned int& h3_r = h3;
+        unsigned int& h4_r = h4;
+        unsigned int& h5_r = h5;
+        unsigned int& h6_r = h6;
+        unsigned int& h7_r = h7;*/
         inline constexpr static unsigned int table[] {
                 0x428a2f98, 0x71374491, 0xb5c0fbcf,
                 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
@@ -43,18 +52,18 @@ namespace gsm{
                 };
         static void preprocessing();
         static unsigned int calculate_k(unsigned int message_length_of_bits);
-        static std::string char_string_to_binary_string(std::string str,unsigned int size);
-        static std::string append_big_endian(unsigned int message_length_of_bits); 
-        
-        static std::vector<unsigned int> extending_16_words_to_64_words(std::string message);
-        static unsigned int string_of_32bits_to_int(std::string number_as_string);
-        static std::string right_rotation(std::string str,unsigned int rotation_value);
-        static std::string compression(std::vector<unsigned int> w);
-        static std::string ascii_string_from_binary_string(std::string str);
+        static std::string char_string_to_binary_string(const std::string& str,unsigned int size);
+        static std::string append_big_endian(unsigned int message_length_of_bits);
+        static std::vector<unsigned int> extending_16_words_to_64_words(const std::string& message);
+        static unsigned int string_of_32bits_to_int(const std::string& number_as_string);
+        static std::string right_rotation(const std::string& str,unsigned int rotation_value);
+        static void compression(const std::vector<unsigned int>& w);
+        static std::string ascii_string_from_binary_string(const std::string& str);
         static std::string hex_to_string(unsigned int number);
         static unsigned int integer_right_rotation(unsigned int number, unsigned int d);
+        static std::vector<std::string> partition_into_blocks(const std::string& message);
     public:
-        static std::string hash_value(std::string msg);
+        static std::string hash_value(const std::string& msg);
     };
 
 

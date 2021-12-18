@@ -1,5 +1,5 @@
 #include "sha256.h"
-/*
+
 unsigned int gsm::Sha256::h0;
 unsigned int gsm::Sha256::h1;
 unsigned int gsm::Sha256::h2;
@@ -8,8 +8,8 @@ unsigned int gsm::Sha256::h4;
 unsigned int gsm::Sha256::h5;
 unsigned int gsm::Sha256::h6;
 unsigned int gsm::Sha256::h7;
-*/
-std::string gsm::Sha256::hash_value(std::string msg)
+
+std::string gsm::Sha256::hash_value(const std::string& msg)
 {
     gsm::Sha256::h0 = 0x6a09e667;
     gsm::Sha256::h1 = 0xbb67ae85;
@@ -21,20 +21,43 @@ std::string gsm::Sha256::hash_value(std::string msg)
     gsm::Sha256::h7 = 0x5be0cd19;
 
     std::string message=char_string_to_binary_string(msg,8);
-    std::vector<unsigned int> w;
-    unsigned int original_message_in_bits_length=message.size();
+    std::vector<std::string> message_blocks{};
+    unsigned int original_message_in_bits_length = static_cast<unsigned int>(message.size());
     message+='1';
-    unsigned int k=calculate_k(message.size());    
+    unsigned int k=static_cast<unsigned int>(calculate_k(original_message_in_bits_length));
+
     for(int i=0;i<k;++i)
     {
         message+='0';
     }
+
     message+=append_big_endian(original_message_in_bits_length);
-    w = extending_16_words_to_64_words(message);
-    message = compression(w);
-    return message;
+    message_blocks = partition_into_blocks(message);
+    std::vector<std::vector<unsigned int>> block_w(message_blocks.size());
+    for (std::string block : message_blocks)
+    {
+        std::vector<unsigned int> w{};
+        w = extending_16_words_to_64_words(block);
+        compression(w);
+    }
+    std::string output = hex_to_string(h0) + hex_to_string(h1)
+        + hex_to_string(h2) + hex_to_string(h3)
+        + hex_to_string(h4) + hex_to_string(h5)
+        + hex_to_string(h6) + hex_to_string(h7);
+    return output;
 }
-std::string gsm::Sha256::char_string_to_binary_string(std::string str,unsigned int size)
+std::vector<std::string> gsm::Sha256::partition_into_blocks(const std::string& message)
+{
+    std::vector<std::string> output{};
+    std::cout<<"length"<< message.length() <<std::endl;
+    unsigned int blocks_numebr = static_cast<int>(message.length()/512);
+    for (int i=0,index = 0 ; i < blocks_numebr ; ++i,++index)
+    {
+        output.push_back(message.substr(index*512,512));
+    }
+    return output;
+}
+std::string gsm::Sha256::char_string_to_binary_string(const std::string& str, unsigned int size)
 {
     std::string output="";
     for(char character : str)
@@ -53,9 +76,12 @@ unsigned int gsm::Sha256::calculate_k(unsigned int message_length_of_bits)
     }
     else
     {
-        unsigned int k,pad_number=message_length_of_bits/512;
-        k=pad_number*512;
-        return (message_length_of_bits-64)-k;
+        unsigned int k;
+        unsigned int pad_number = 64 + 1 + message_length_of_bits;
+        k = ceil(pad_number/512.0);
+        k = k * 512;
+        k = k - pad_number;
+        return k;
     }
 }
 std::string gsm::Sha256::append_big_endian(unsigned int message_length_of_bits)
@@ -64,17 +90,18 @@ std::string gsm::Sha256::append_big_endian(unsigned int message_length_of_bits)
     output=std::bitset<64>(message_length_of_bits).to_string();
     return output;
 }
-unsigned int gsm::Sha256::string_of_32bits_to_int(std::string number_as_string)
+unsigned int gsm::Sha256::string_of_32bits_to_int(const std::string& number_as_string)
 {
-    return stoi(number_as_string,0,2);
+    return static_cast<unsigned int>(std::stoull(number_as_string,0,2));
+    //return stoi(number_as_string,0,2);
 }
-std::string gsm::Sha256::right_rotation(std::string str,unsigned int rotation_value)
+std::string gsm::Sha256::right_rotation(const std::string& str,unsigned int rotation_value)
 {
     return str.substr(rotation_value,str.size())+str.substr(0,rotation_value);
 }
-std::vector<unsigned int> gsm::Sha256::extending_16_words_to_64_words(std::string message)
+std::vector<unsigned int> gsm::Sha256::extending_16_words_to_64_words(const std::string& message)
 {
-    unsigned int number_of_chunks=message.size()/512;
+    unsigned int number_of_chunks=static_cast<unsigned int>(message.size()/512);
     std::vector<unsigned int> w_vector(64);
     std::string w_string[16];
     unsigned int index=0,j=0;
@@ -120,7 +147,7 @@ std::string gsm::Sha256::hex_to_string(unsigned int number)
     std::string output(ss.str());
     return output;
 }
-std::string gsm::Sha256::compression(std::vector<unsigned int> w)
+void gsm::Sha256::compression(const std::vector<unsigned int>& w)
 {
     unsigned int a,b,c,d,e,f,g,h,s0,s1,ch;
     unsigned int right_side,middle,left_side,temp1, maj, temp2;
@@ -160,7 +187,7 @@ std::string gsm::Sha256::compression(std::vector<unsigned int> w)
         //maj := (a and b) xor (a and c) xor (b and c)
         left_side = a & b;
         middle = a & c;
-        right_side = b & c; 
+        right_side = b & c;
         maj = left_side^middle^right_side;
         temp2 = s0 + maj;
 
@@ -173,35 +200,28 @@ std::string gsm::Sha256::compression(std::vector<unsigned int> w)
         b = a;
         a = temp1 + temp2;
     }
+    h0 = h0+a;
+    h1 = h1+b;
+    h2 = h2+c;
+    h3 = h3+d;
+    h4 = h4+e;
+    h5 = h5+f;
+    h6 = h6+g;
+    h7 = h7+h;
 
-    h0=h0+a;
-    h1=h1+b;
-    h2=h2+c;
-    h3=h3+d;
-    h4=h4+e;
-    h5=h5+f;
-    h6=h6+g;
-    h7=h7+h;
-
-    std::string output = hex_to_string(h0) + hex_to_string(h1) 
-        + hex_to_string(h2) + hex_to_string(h3) 
-        + hex_to_string(h4) + hex_to_string(h5)
-        + hex_to_string(h6) + hex_to_string(h7);
-
-    return output;
 }
-std::string gsm::Sha256::ascii_string_from_binary_string(std::string str)
+std::string gsm::Sha256::ascii_string_from_binary_string(const std::string& str)
 {
-	std::string output="";
-	std::stringstream sstream(str);
-	while (sstream.good())
-	{
-		std::bitset<8> bit;
-		sstream >> bit;
-		if (!sstream.good())
-			break;
-		char c = char(bit.to_ullong());
-		output = output + c;
-	}
-	return output;
+    std::string output="";
+    std::stringstream sstream(str);
+    while (sstream.good())
+    {
+        std::bitset<8> bit;
+        sstream >> bit;
+        if (!sstream.good())
+            break;
+        char c = char(bit.to_ullong());
+        output = output + c;
+    }
+    return output;
 }
