@@ -1,2 +1,3 @@
 build/*
 sha256/build
+.DS_Store
